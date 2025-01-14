@@ -168,10 +168,10 @@ const handleSaveLineup = async () => {
             <div style={styles.playerInfo}>
               <p style={styles.playerName}>{player.lastName}, {player.firstName}</p>
                 <p style={styles.playerPosition}>
-                  <span role="img" aria-label="Soccer Ball">⚽</span> {player.favoritePosition}
+                  <span role="img" aria-label="Soccer Ball">Pos: </span> {player.favoritePosition}
                 </p>
                 <p style={styles.playerPower}>
-                  <span role="img" aria-label="Fire">🔥</span> Power: {player.powerRating}
+                   Power: {player.powerRating} <span role="img" aria-label="Fire">🔥</span>
                 </p>
             </div>
           </div>

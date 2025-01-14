@@ -123,7 +123,7 @@ const styles = {
     width: '80%',
   },
   teamCard: {
-    width: '300px',
+    width: '250px',
     padding: '20px',
     borderRadius: '10px',
     border: '2px solid #5D737E',

@@ -12,7 +12,10 @@ function AddPlayer() {
     lastName: '',
     nationality: '',
     favoritePosition: '',
-    powerRating: '',
+    PAC: '',
+    SHO: '',
+    PAS: '',
+    DRI: '',
     pin: '',
   });
 
@@ -53,70 +56,78 @@ function AddPlayer() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Add New Player</h1>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input
-          type="text"
-          name="firstName"
-          placeholder="First Name"
-          value={newPlayer.firstName}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-        <input
-          type="text"
-          name="lastName"
-          placeholder="Last Name"
-          value={newPlayer.lastName}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-        <input
-          type="text"
-          name="nationality"
-          placeholder="Nationality"
-          value={newPlayer.nationality}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-        <select
-          name="favoritePosition"
-          value={newPlayer.favoritePosition}
-          onChange={handleChange}
-          required
-          style={styles.select}
-        >
-          <option value="">Select Position</option>
-          {positions.map((pos, index) => (
-            <option key={index} value={pos}>{pos}</option>
-          ))}
-        </select>
-        <input
-          type="number"
-          name="powerRating"
-          placeholder="Power Rating"
-          value={newPlayer.powerRating}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
+      <h1 style={styles.title}>🕹️ Create New Player</h1>
 
-        <input
-          type="password"
-          name="pin"
-          placeholder="Set a PIN (for edit/delete)"
-          value={newPlayer.pin}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
+      <div style={styles.card}>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <input
+            type="text"
+            name="firstName"
+            placeholder="First Name"
+            value={newPlayer.firstName}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
 
-        <button type="submit" style={styles.button}>Add Player</button>
-      </form>
-      <button style={styles.backButton} onClick={() => navigate('/players-management')}>Back</button>
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Last Name"
+            value={newPlayer.lastName}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <input
+            type="text"
+            name="nationality"
+            placeholder="Nationality"
+            value={newPlayer.nationality}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <select
+            name="favoritePosition"
+            value={newPlayer.favoritePosition}
+            onChange={handleChange}
+            required
+            style={styles.select}
+          >
+            <option value="">Select Position</option>
+            {positions.map((pos, index) => (
+              <option key={index} value={pos}>{pos}</option>
+            ))}
+          </select>
+
+          {/* ✅ Retro FIFA Stats Section */}
+          <div style={styles.statsContainer}>
+            <input type="number" name="PAC" placeholder="PAC" value={newPlayer.PAC} onChange={handleChange} required style={styles.statInput} />
+            <input type="number" name="SHO" placeholder="SHO" value={newPlayer.SHO} onChange={handleChange} required style={styles.statInput} />
+            <input type="number" name="PAS" placeholder="PAS" value={newPlayer.PAS} onChange={handleChange} required style={styles.statInput} />
+            <input type="number" name="DRI" placeholder="DRI" value={newPlayer.DRI} onChange={handleChange} required style={styles.statInput} />
+          </div>
+
+          <input
+            type="password"
+            name="pin"
+            placeholder="Set a PIN (for edit/delete)"
+            value={newPlayer.pin}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <button type="submit" style={styles.button}>⚽ Add Player</button>
+        </form>
+      </div>
+
+      <button style={styles.backButton} onClick={() => navigate('/players-management')}>
+        ⬅️ Back
+      </button>
     </div>
   );
 }
@@ -131,12 +142,81 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
   },
-  title: { fontSize: '24px', marginBottom: '20px' },
-  form: { display: 'flex', flexDirection: 'column', gap: '10px', width: '300px' },
-  input: { padding: '10px', borderRadius: '5px' },
-  select: { padding: '10px', borderRadius: '5px' },
-  button: { backgroundColor: '#386C0B', color: '#FFF', padding: '10px' },
-  backButton: { marginTop: '20px', backgroundColor: '#5D737E', padding: '10px' },
+
+  title: {
+    fontSize: '28px',
+    color: '#293F14',
+    marginBottom: '20px',
+    textShadow: '3px 3px #7FC6A4',
+  },
+
+  card: {
+    backgroundColor: '#7FC6A4',
+    padding: '25px',
+    width: '400px',
+    borderRadius: '15px',
+    border: '3px solid #386C0B',
+    boxShadow: '6px 6px #293F14',
+    textAlign: 'center',
+  },
+
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
+  },
+
+  input: {
+    padding: '10px',
+    borderRadius: '8px',
+    border: '2px solid #386C0B',
+    textAlign: 'center',
+    fontSize: '14px',
+  },
+
+  select: {
+    padding: '10px',
+    borderRadius: '8px',
+    border: '2px solid #386C0B',
+    fontSize: '14px',
+  },
+
+  statsContainer: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '10px',
+  },
+
+  statInput: {
+    padding: '8px',
+    borderRadius: '8px',
+    border: '2px solid #293F14',
+    backgroundColor: '#386C0B',
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  button: {
+    backgroundColor: '#386C0B',
+    color: '#FFFFFF',
+    padding: '12px',
+    fontWeight: 'bold',
+    fontSize: '16px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    boxShadow: '4px 4px #293F14',
+  },
+
+  backButton: {
+    marginTop: '20px',
+    backgroundColor: '#5D737E',
+    color: '#FFFFFF',
+    padding: '10px 20px',
+    borderRadius: '10px',
+    border: '2px solid #293F14',
+    cursor: 'pointer',
+  },
 };
 
 export default AddPlayer;

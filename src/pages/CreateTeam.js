@@ -7,6 +7,7 @@ function CreateTeam() {
   const navigate = useNavigate();
   const [teamData, setTeamData] = useState({
     name: '',
+    shortcut: '',
     color: '#386C0B',
     playerCount: 4,
     tactic: 1,
@@ -26,20 +27,20 @@ function CreateTeam() {
     setTeamData({ ...teamData, tactic });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await addDoc(collection(db, 'teams'), {
-        ...teamData,
-        createdAt: Timestamp.now(),
-      });
-      alert('Team created successfully!');
-      navigate('/teams-management');
-    } catch (error) {
-      console.error('Error creating team:', error);
-      alert('Failed to create team.');
-    }
-  };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, 'teams'), {
+          ...teamData,
+          createdAt: Timestamp.now(),
+        });
+        alert('Team created successfully!');
+        navigate('/teams-management');
+      } catch (error) {
+        console.error('Error creating team:', error);
+        alert('Failed to create team.');
+      }
+    };
 
   const renderTacticImages = () => {
     const images = [1, 2, 3].map((num) => ({
@@ -62,69 +63,96 @@ function CreateTeam() {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Create New Team</h1>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <label style={styles.label}>Team Name</label>
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter team name"
-          value={teamData.name}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
+       <>
+         <div style={styles.container}>
+           <h1 style={styles.title}>Create New Team</h1>
+           <form onSubmit={handleSubmit} style={styles.form}>
+             {/* ✅ Team Name Field */}
+             <label style={styles.label}>Team Name</label>
+             <input
+               type="text"
+               name="name"
+               placeholder="Name of your team"
+               value={teamData.name}
+               onChange={(e) => setTeamData({ ...teamData, name: e.target.value })}
+               required
+               style={styles.input}
+             />
 
-        <label style={styles.label}>Team Color</label>
-        <input
-          type="color"
-          name="color"
-          value={teamData.color}
-          onChange={handleChange}
-          style={styles.colorInput}
-        />
+             {/* ✅ Team Shortcut Field */}
+             <label style={styles.label}>Team Shortcut</label>
+             <input
+               type="text"
+               name="shortcut"
+               placeholder="ABC"
+               value={teamData.shortcut}
+               onChange={(e) => {
+                 const value = e.target.value.toUpperCase().slice(0, 3);
+                 setTeamData({ ...teamData, shortcut: value });
+               }}
+               required
+               style={styles.shortcutInput}
+             />
 
-        <label style={styles.label}>Number of Players</label>
-        <select
-          name="playerCount"
-          value={teamData.playerCount}
-          onChange={handlePlayerCountChange}
-          style={styles.select}
-        >
-          <option value={4}>4 Players</option>
-          <option value={5}>5 Players</option>
-          <option value={6}>6 Players</option>
-        </select>
+             {/* ✅ Team Color */}
+             <label style={styles.label}>Team Color</label>
+             <input
+               type="color"
+               name="color"
+               value={teamData.color}
+               onChange={handleChange}
+               style={styles.colorInput}
+             />
 
-        <label style={styles.label}>Select Tactic</label>
-        <div style={styles.tacticContainer}>{renderTacticImages()}</div>
+             {/* ✅ Number of Players */}
+             <label style={styles.label}>Number of Players</label>
+             <select
+               name="playerCount"
+               value={teamData.playerCount}
+               onChange={handlePlayerCountChange}
+               style={styles.select}
+             >
+               <option value={4}>4 Players</option>
+               <option value={5}>5 Players</option>
+               <option value={6}>6 Players</option>
+             </select>
 
-        <label style={styles.label}>Entrance Song (Spotify Link)</label>
-        <input
-          type="url"
-          name="entranceSong"
-          placeholder="Paste Spotify link"
-          value={teamData.entranceSong}
-          onChange={handleChange}
-          style={styles.input}
-        />
+             {/* ✅ Tactic Selection */}
+             <label style={styles.label}>Select Tactic</label>
+             <div style={styles.tacticContainer}>{renderTacticImages()}</div>
 
-        <label style={styles.label}>PIN (for Editing/Deleting)</label>
-        <input
-          type="password"
-          name="pin"
-          placeholder="Enter PIN"
-          value={teamData.pin}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+             {/* ✅ Entrance Song */}
+             <label style={styles.label}>Entrance Song (Spotify Link)</label>
+             <input
+               type="url"
+               name="entranceSong"
+               placeholder="Paste Spotify link"
+               value={teamData.entranceSong}
+               onChange={handleChange}
+               style={styles.input}
+             />
 
-        <button type="submit" style={styles.button}>Create Team</button>
-      </form>
-      <button style={styles.backButton} onClick={() => navigate('/teams-management')}>Back</button>
-    </div>
+             {/* ✅ PIN */}
+             <label style={styles.label}>PIN (for Editing/Deleting)</label>
+             <input
+               type="password"
+               name="pin"
+               placeholder="Enter PIN"
+               value={teamData.pin}
+               onChange={handleChange}
+               style={styles.input}
+               required
+             />
+
+             <button type="submit" style={styles.button}>Create Team</button>
+           </form>
+
+           <button style={styles.backButton} onClick={() => navigate('/teams-management')}>
+             Back
+           </button>
+         </div>
+       </>
+
   );
 }
 
@@ -201,6 +229,18 @@ const styles = {
     cursor: 'pointer',
     fontSize: '14px',
   },
+  shortcutInput: {
+    padding: '10px',
+    borderRadius: '8px',
+    border: '2px solid #7FC6A4',
+    fontSize: '20px',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: '2px',
+    width: '100px',
+    alignSelf: 'center',
+  },
+
 };
 
 export default CreateTeam;
