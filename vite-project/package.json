@@ -1,5 +1,5 @@
 {
-  "name": "playerratingtool",
+  "name": "vite-project",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,10 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "cropperjs": "^2.0.0",
-    "firebase": "^11.9.0",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.1"
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
