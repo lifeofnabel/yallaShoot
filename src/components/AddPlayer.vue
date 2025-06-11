@@ -12,6 +12,7 @@
         <input id="lastName" v-model="newPlayer.lastName" placeholder="Mustermann" required />
       </div>
 
+
       <div class="form-group">
         <label for="birthdate">Geburtsdatum</label>
         <input id="birthdate" type="date" v-model="newPlayer.birthdate" required />

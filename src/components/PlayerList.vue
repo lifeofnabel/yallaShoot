@@ -11,19 +11,39 @@
             Add Player
           </button>
         </router-link>
-        <router-link to="/rate" class="btn-secondary" :class="{ disabled: loading }">
-          <button :disabled="loading">
-            Ratings
-          </button>
-        </router-link>
+
+      </div>
+
+      <!-- Filter & Sort -->
+      <div class="filter-sort-row">
+        <div class="form-group">
+          <label for="filterPosition">Filter by Position:</label>
+          <select id="filterPosition" v-model="selectedPosition">
+            <option value="">All Positions</option>
+            <option v-for="pos in positions" :key="pos.id" :value="pos.shortcut">
+              {{ pos.shortcut }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="sortBy">Sort by:</label>
+          <select id="sortBy" v-model="sortBy">
+            <option value="nameAsc">Name A-Z</option>
+            <option value="nameDesc">Name Z-A</option>
+            <option value="positionAsc">Position A-Z</option>
+            <option value="positionDesc">Position Z-A</option>
+            <option value="avgAsc">AVG ↑</option>
+            <option value="avgDesc">AVG ↓</option>
+          </select>
+        </div>
       </div>
     </section>
 
     <!-- Spieler-Galerie -->
-    <section class="section players-section" v-if="players.length">
+    <section class="section players-section" v-if="filteredAndSortedPlayers.length">
       <div class="players-grid">
         <router-link
-            v-for="player in players"
+            v-for="player in filteredAndSortedPlayers"
             :key="player.id"
             :to="`/player/${player.id}`"
             class="player-card fifa-card"
@@ -34,10 +54,15 @@
           <div class="card-body">
             <img
                 :src="player.profileImage || '/placeholder.png'"
-                alt="Profilbild"
+                alt="Profile"
                 class="player-img"
             />
-            <h3 class="player-name">{{ player.firstName }} {{ player.lastName }}</h3>
+            <h3 class="player-name">
+              {{ player.firstName }} {{ player.lastName }}
+            </h3>
+            <h4>
+              {{ player.nation }}
+            </h4>
           </div>
           <div class="card-footer">
             <span class="player-rating">
@@ -63,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { db } from '../Firebase/firebaseConfig'
 import { collection, getDocs } from 'firebase/firestore'
 
@@ -72,13 +97,23 @@ interface Player {
   firstName: string
   lastName: string
   position: string
+  nation: string
   profileImage?: string
   avgRating: number | null
 }
 
-const players = ref<Player[]>([])
-const loading = ref(false)
+interface Position {
+  id: string
+  shortcut: string
+}
 
+const players = ref<Player[]>([])
+const positions = ref<Position[]>([])
+const loading = ref(false)
+const selectedPosition = ref('')
+const sortBy = ref('nameAsc')
+
+// Fetch Players
 const fetchPlayers = async () => {
   loading.value = true
   try {
@@ -88,6 +123,7 @@ const fetchPlayers = async () => {
       firstName: doc.data().firstName,
       lastName: doc.data().lastName,
       position: doc.data().position,
+      nation: doc.data().nation || '🌐',
       profileImage: doc.data().profileImage || '',
       avgRating: null
     })) as Player[]
@@ -106,12 +142,58 @@ const fetchPlayers = async () => {
     }
 
     players.value = loadedPlayers
+    await fetchPositions()
   } catch (e) {
     console.error('Error loading players:', e)
   } finally {
     loading.value = false
   }
 }
+
+// Fetch Positions
+const fetchPositions = async () => {
+  const posSnap = await getDocs(collection(db, 'positions'))
+  positions.value = posSnap.docs.map(doc => ({
+    id: doc.id,
+    shortcut: doc.data().shortcut
+  }))
+}
+
+// Computed Filtered & Sorted Players
+const filteredAndSortedPlayers = computed(() => {
+  let result = [...players.value]
+
+  // Filter
+  if (selectedPosition.value) {
+    result = result.filter(player => player.position === selectedPosition.value)
+  }
+
+  // Sort
+  switch (sortBy.value) {
+    case 'nameAsc':
+      result.sort((a, b) => a.firstName.localeCompare(b.firstName))
+      break
+    case 'nameDesc':
+      result.sort((a, b) => b.firstName.localeCompare(a.firstName))
+      break
+    case 'positionAsc':
+      result.sort((a, b) => a.position.localeCompare(b.position))
+      break
+    case 'positionDesc':
+      result.sort((a, b) => b.position.localeCompare(a.position))
+      break
+    case 'avgAsc':
+      result.sort((a, b) => (a.avgRating ?? 0) - (b.avgRating ?? 0))
+      break
+    case 'avgDesc':
+      result.sort((a, b) => (b.avgRating ?? 0) - (a.avgRating ?? 0))
+      break
+  }
+
+  return result
+})
+
+onMounted(fetchPlayers)
 </script>
 
 <style scoped>
@@ -171,30 +253,32 @@ const fetchPlayers = async () => {
   cursor: not-allowed;
 }
 
+.filter-sort-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  justify-content: center;
+  margin-top: 1rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+.form-group select {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: #f9f9f9;
+}
+
 .players-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
   gap: var(--gap);
-}
-
-.empty .no-players {
-  text-align: center;
-  color: #718096;
-  font-size: 1rem;
-}
-
-.footer {
-  text-align: center;
-}
-.admin-link {
-  display: inline-block;
-  margin-top: 1rem;
-  color: #718096;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-.admin-link:hover {
-  color: #5a83f7;
 }
 
 .fifa-card {
@@ -202,7 +286,7 @@ const fetchPlayers = async () => {
   flex-direction: column;
   overflow: hidden;
   border-radius: var(--radius);
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
   backdrop-filter: blur(8px);
   transition: transform 0.3s, box-shadow 0.3s;
 }
@@ -237,11 +321,8 @@ const fetchPlayers = async () => {
 .player-name {
   font-size: 1.2rem;
   font-weight: 600;
+  color: #333;
   margin-bottom: 0.5rem;
-}
-.player-role {
-  color: #4a5568;
-  margin-bottom: 0.75rem;
 }
 
 .card-footer {
@@ -254,16 +335,32 @@ const fetchPlayers = async () => {
   color: var(--primary);
 }
 
+.empty .no-players {
+  text-align: center;
+  color: #718096;
+  font-size: 1rem;
+}
+
+.footer {
+  text-align: center;
+}
+.admin-link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #718096;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.admin-link:hover {
+  color: #5a83f7;
+}
+
 @media (max-width: 600px) {
   .players-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
   }
   .controls .button-row {
     flex-direction: column;
-  }
-  .controls .btn-secondary:hover:not(:disabled) {
-    background: var(--secondary-hover);
-    transform: translateY(-2px);
   }
 }
 </style>

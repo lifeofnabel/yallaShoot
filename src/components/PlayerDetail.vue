@@ -1,12 +1,12 @@
 <template>
   <div class="detail-page">
-    <button class="back" @click="goBack">← Zurück</button>
+    <button class="back" @click="goBack">← back</button>
     <div class="card">
-      <h2>Spieler bearbeiten</h2>
+      <h2>Player Page</h2>
 
       <!-- PIN-Login -->
       <div v-if="!authenticated" class="pin-login">
-        <label for="pin-input">Bitte PIN eingeben:</label>
+        <label for="pin-input">Enter your pin:</label>
         <input
             id="pin-input"
             type="password"
@@ -22,13 +22,17 @@
       <div v-else>
         <!-- Bild Upload -->
         <div class="form-group">
-          <label for="image">Profilbild</label>
-          <input
-              id="image"
-              type="file"
-              @change="handleImageUpload"
-              accept="image/*"
-          />
+          <label for="nation">Nation</label>
+          <select id="nation" v-model="player.nation" required>
+            <option disabled value="">Choose Flag</option>
+            <option
+                v-for="f in flags"
+                :key="f.id"
+                :value="f.flag"
+            >
+              {{ f.flag }} {{ f.name }}
+            </option>
+          </select>
         </div>
         <div v-if="player.profileImage" class="preview-circle">
           <img :src="player.profileImage" alt="Vorschau" />
@@ -37,15 +41,15 @@
         <!-- Formular -->
         <form @submit.prevent="updatePlayer">
           <div class="form-group">
-            <label for="firstName">Vorname</label>
+            <label for="firstName">First Name</label>
             <input id="firstName" v-model="player.firstName" required />
           </div>
           <div class="form-group">
-            <label for="lastName">Nachname</label>
+            <label for="lastName">Surename</label>
             <input id="lastName" v-model="player.lastName" required />
           </div>
           <div class="form-group">
-            <label for="birthdate">Geburtsdatum</label>
+            <label for="birthdate">Birthday</label>
             <input id="birthdate" type="date" v-model="player.birthdate" required />
           </div>
           <div class="form-group">
@@ -62,11 +66,16 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="nation">Nation</label>
+            <label for="nation">Flag</label>
             <select id="nation" v-model="player.nation" required>
               <option disabled value="">Nation wählen</option>
-              <option value="🇩🇪">🇩🇪 Deutschland</option>
-              <option value="🌐">🌐 Andere</option>
+              <option
+                  v-for="f in flags"
+                  :key="f.id"
+                  :value="f.flag"
+              >
+                {{ f.flag }} {{ f.name }}
+              </option>
             </select>
           </div>
           <div class="form-group">
@@ -76,24 +85,24 @@
 
           <div class="button-group">
             <button type="submit" class="btn save" :disabled="loading">
-              {{ loading ? 'Speichern…' : 'Speichern' }}
+              {{ loading ? 'Saving…' : 'Save' }}
             </button>
             <button type="button" class="btn delete" @click="deletePlayer">
-              Löschen
+              Delete
             </button>
           </div>
         </form>
 
         <!-- News & PIN Bereich -->
         <div class="news-box">
-          <h3>Dein PIN aus aktuellen Runden</h3>
+          <h3>Your Pins & Rounds:</h3>
           <ul>
             <li v-for="runde in rounds" :key="runde.id">
               <strong>{{ runde.date }} um {{ runde.time }}</strong>
               <div v-if="getPlayerPin(runde) !== '—'">
                 PIN: <span class="pin">{{ getPlayerPin(runde) }}</span>
                 <button @click="copyRoundPin(getPlayerPin(runde))" class="copy-btn">
-                  Kopieren
+                  Copy
                 </button>
               </div>
               <div v-else>
@@ -102,7 +111,10 @@
             </li>
           </ul>
           <router-link to="/rate" class="btn-rate">
-            Zur Bewertungsseite
+            To Review Page
+          </router-link>
+          <router-link to="/" class="btn-rate">
+            To Main Page
           </router-link>
         </div>
       </div>
@@ -133,6 +145,7 @@ const player = ref<any>({})
 const loading = ref(false)
 const positions = ref<{ id: string; shortcut: string }[]>([])
 const rounds = ref<any[]>([])
+const flags = ref<{ id: string; flag: string; name: string }[]>([])
 
 // PIN Login
 const enteredPin = ref('')
@@ -168,10 +181,20 @@ async function fetchRounds() {
   }))
 }
 
+async function fetchFlags() {
+  const snap = await getDocs(collection(db, 'flags'))
+  flags.value = snap.docs.map(doc => ({
+    id: doc.id,
+    flag: doc.data().flag,
+    name: doc.data().name
+  }))
+}
+
 onMounted(async () => {
   await fetchPlayer()
   await fetchPositions()
   await fetchRounds()
+  await fetchFlags()
 })
 
 // PIN Check
