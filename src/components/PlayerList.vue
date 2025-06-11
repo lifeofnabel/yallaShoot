@@ -237,7 +237,6 @@ const fetchPlayers = async () => {
 .player-name {
   font-size: 1.2rem;
   font-weight: 600;
-  color: var(--text);
   margin-bottom: 0.5rem;
 }
 .player-role {

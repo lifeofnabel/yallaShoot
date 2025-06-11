@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { db } from '../Firebase/firebaseConfig'
 import {
   collection,
