@@ -12,7 +12,6 @@
         <input id="lastName" v-model="newPlayer.lastName" placeholder="Mustermann" required />
       </div>
 
-
       <div class="form-group">
         <label for="birthdate">Geburtsdatum</label>
         <input id="birthdate" type="date" v-model="newPlayer.birthdate" required />
@@ -32,54 +31,22 @@
         <label>Nation:</label>
         <select v-model="newPlayer.nation" required>
           <option disabled value="">Nation auswählen</option>
-          <option value="🇦🇱">🇦🇱 Albanien</option>
-          <option value="🇦🇫">🇦🇫 Afghanistan</option>
-          <option value="🇦🇷">🇦🇷 Argentinien</option>
-          <option value="🇧🇦">🇧🇦 Bosnien und Herzegowina</option>
-          <option value="🇧🇷">🇧🇷 Brasilien</option>
-          <option value="🇧🇬">🇧🇬 Bulgarien</option>
-          <option value="🇨🇱">🇨🇱 Chile</option>
-          <option value="🇨🇳">🇨🇳 China</option>
-          <option value="🇨🇴">🇨🇴 Kolumbien</option>
-          <option value="🇩🇪">🇩🇪 Deutschland</option>
-          <option value="🇪🇬">🇪🇬 Ägypten</option>
-          <option value="🇪🇷">🇪🇷 Eritrea</option>
-          <option value="🇪🇸">🇪🇸 Spanien</option>
-          <option value="🇫🇷">🇫🇷 Frankreich</option>
-          <option value="🇬🇧">🇬🇧 Großbritannien</option>
-          <option value="🇬🇷">🇬🇷 Griechenland</option>
-          <option value="🇭🇷">🇭🇷 Kroatien</option>
-          <option value="🇮🇳">🇮🇳 Indien</option>
-          <option value="🇮🇹">🇮🇹 Italien</option>
-          <option value="🇯🇴">🇯🇴 Jordanien</option>
-          <option value="🇰🇪">🇰🇪 Kenia</option>
-          <option value="🇽🇰">🇽🇰 Kosovo</option>
-          <option value="🇱🇧">🇱🇧 Libanon</option>
-          <option value="🇱🇾">🇱🇾 Libyen</option>
-          <option value="🇲🇦">🇲🇦 Marokko</option>
-          <option value="🇲🇪">🇲🇪 Montenegro</option>
-          <option value="🇳🇱">🇳🇱 Niederlande</option>
-          <option value="🇳🇴">🇳🇴 Norwegen</option>
-          <option value="🇵🇰">🇵🇰 Pakistan</option>
-          <option value="🇵🇱">🇵🇱 Polen</option>
-          <option value="🇵🇹">🇵🇹 Portugal</option>
-          <option value="🇷🇴">🇷🇴 Rumänien</option>
-          <option value="🇷🇸">🇷🇸 Serbien</option>
-          <option value="🇷🇺">🇷🇺 Russland</option>
-          <option value="🇸🇦">🇸🇦 Saudi-Arabien</option>
-          <option value="🇸🇾">🇸🇾 Syrien</option>
-          <option value="🇹🇳">🇹🇳 Tunesien</option>
-          <option value="🇹🇷">🇹🇷 Türkei</option>
-          <option value="🇺🇦">🇺🇦 Ukraine</option>
-          <option value="🇺🇬">🇺🇬 Uganda</option>
-          <option value="🇺🇸">🇺🇸 USA</option>
-          <option value="🇻🇳">🇻🇳 Vietnam</option>
-          <option value="🌐">🌐 Andere</option>
+          <option v-for="nation in nations" :key="nation.id" :value="nation.flag">
+            {{ nation.flag }} {{ nation.name }}
+          </option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="pin (Remember it!">PIN</label>
+        <label for="image">Profilbild hochladen</label>
+        <input id="image" type="file" @change="handleImageUpload" accept="image/*" />
+        <div v-if="newPlayer.profileImage">
+          <img :src="newPlayer.profileImage" alt="Vorschau" style="max-width: 150px; margin-top: 10px;" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="pin">PIN</label>
         <input id="pin" type="number" v-model="newPlayer.pin" placeholder="1234" required />
       </div>
 
@@ -95,11 +62,40 @@
     </form>
   </div>
 </template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { db } from '../Firebase/firebaseConfig'
 import { collection, getDocs, addDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router'
+
+// Nationen aus Firestore laden
+interface Nation {
+  id: string
+  flag: string
+  name: string
+}
+const nations = ref<Nation[]>([])
+
+const fetchNations = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'flags'))
+    nations.value = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      flag: doc.data().flag,
+      name: doc.data().name
+    }))
+  } catch (error) {
+    console.error('Fehler beim Laden der Nationen:', error)
+  }
+}
+
+// onMounted
+onMounted(async () => {
+  await fetchPositions()
+  await fetchNations() // Nationen auch abrufen
+})
+
 
 // Router
 const router = useRouter()
@@ -112,7 +108,7 @@ const newPlayer = ref({
   position: '',
   nation: '',
   pin: '',
-  profileImage: '',    // hier wird später die URL stehen
+  profileImage: '',
   avgRating: 0
 })
 
@@ -138,6 +134,30 @@ const fetchPositions = async () => {
   }
 }
 
+// Bild-Upload mit imgBB
+const handleImageUpload = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  loading.value = true
+  try {
+    const form = new FormData()
+    form.append('image', file)
+
+    const res = await fetch(
+        'https://api.imgbb.com/1/upload?key=b9e14dec9a999e3f16b2538f05c5f9d7',
+        { method: 'POST', body: form }
+    )
+    const json = await res.json()
+    newPlayer.value.profileImage = json.data.url
+  } catch (error) {
+    console.error('Fehler beim Bild-Upload:', error)
+    alert('Fehler beim Bild-Upload.')
+  } finally {
+    loading.value = false
+  }
+}
+
 // Spieler hinzufügen
 const addPlayer = async () => {
   try {
@@ -149,7 +169,7 @@ const addPlayer = async () => {
       position: newPlayer.value.position,
       nation: newPlayer.value.nation,
       pin: newPlayer.value.pin,
-      profileImage: newPlayer.value.profileImage,  // neu
+      profileImage: newPlayer.value.profileImage,
       avgRating: 0
     })
     alert('Spieler erfolgreich hinzugefügt!')
@@ -170,6 +190,7 @@ const goBack = () => {
 // Positionen beim Laden abrufen
 onMounted(fetchPositions)
 </script>
+
 
 <style scoped>
 .add-player-form {

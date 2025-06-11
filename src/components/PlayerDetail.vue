@@ -20,7 +20,21 @@
 
       <!-- Bild Upload & Vorschau -->
       <div v-else>
-        <!-- Bild Upload -->
+        <!-- Profilbild -->
+        <div class="form-group">
+          <label for="profileImage">Profile Image</label>
+          <input
+              id="profileImage"
+              type="file"
+              @change="handleImageUpload"
+              accept="image/*"
+          />
+          <div v-if="player.profileImage" class="preview-circle">
+            <img :src="player.profileImage" alt="Vorschau" />
+          </div>
+        </div>
+
+        <!-- Nation -->
         <div class="form-group">
           <label for="nation">Nation</label>
           <select id="nation" v-model="player.nation" required>
@@ -33,9 +47,6 @@
               {{ f.flag }} {{ f.name }}
             </option>
           </select>
-        </div>
-        <div v-if="player.profileImage" class="preview-circle">
-          <img :src="player.profileImage" alt="Vorschau" />
         </div>
 
         <!-- Formular -->
@@ -66,19 +77,6 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="nation">Flag</label>
-            <select id="nation" v-model="player.nation" required>
-              <option disabled value="">Nation wählen</option>
-              <option
-                  v-for="f in flags"
-                  :key="f.id"
-                  :value="f.flag"
-              >
-                {{ f.flag }} {{ f.name }}
-              </option>
-            </select>
-          </div>
-          <div class="form-group">
             <label for="pin">PIN</label>
             <input id="pin" type="number" v-model="player.pin" required />
           </div>
@@ -98,7 +96,7 @@
           <h3>Your Pins & Rounds:</h3>
           <ul>
             <li v-for="runde in rounds" :key="runde.id">
-              <strong>{{ runde.date }} um {{ runde.time }}</strong>
+              <strong>{{ runde.date }} at {{ runde.time }}</strong>
               <div v-if="getPlayerPin(runde) !== '—'">
                 PIN: <span class="pin">{{ getPlayerPin(runde) }}</span>
                 <button @click="copyRoundPin(getPlayerPin(runde))" class="copy-btn">
@@ -106,7 +104,7 @@
                 </button>
               </div>
               <div v-else>
-                Noch kein PIN für dich in dieser Runde.
+                No PIN assigned for this round.
               </div>
             </li>
           </ul>
@@ -152,7 +150,7 @@ const enteredPin = ref('')
 const authenticated = ref(false)
 const pinError = ref('')
 
-// Fetch Functions
+// Fetch Data
 async function fetchPlayer() {
   const snap = await getDoc(doc(db, 'players', id))
   if (snap.exists()) {
@@ -203,7 +201,7 @@ function checkPin() {
     authenticated.value = true
     pinError.value = ''
   } else {
-    pinError.value = 'Falscher PIN!'
+    pinError.value = 'Incorrect PIN!'
   }
 }
 
@@ -231,11 +229,11 @@ async function updatePlayer() {
   loading.value = true
   await updateDoc(doc(db, 'players', id), { ...player.value })
   loading.value = false
-  alert('Änderungen gespeichert!')
+  alert('Changes saved!')
 }
 
 async function deletePlayer() {
-  if (!confirm('Wirklich löschen?')) return
+  if (!confirm('Really delete?')) return
   await deleteDoc(doc(db, 'players', id))
   router.push('/')
 }
@@ -252,9 +250,10 @@ function getPlayerPin(runde: any) {
 
 function copyRoundPin(pin: string) {
   navigator.clipboard.writeText(pin)
-  alert('PIN kopiert!')
+  alert('PIN copied!')
 }
 </script>
+
 
 <style scoped>
 .detail-page {
