@@ -1,7 +1,11 @@
+<!-- App.vue -->
 <template>
   <div id="app">
     <div class="page-overlay"></div>
-    <header>Yalla Shoot Tool</header>
+    <header class="app-header">
+      <h1>SOCCER N & Y</h1>
+      <h5> Players list</h5>
+    </header>
     <main class="page-content">
       <router-view />
     </main>
@@ -9,69 +13,69 @@
 </template>
 
 <script setup lang="ts">
-// Hier brauchst du nichts weiter
+// Leeres Script
 </script>
 
 <style scoped>
+/* Farbpalette und Grund-Variablen */
+:root {
+  --color1: #08605f;
+  --color2: #177e89;
+  --color3: #598381;
+  --color4: #8e936d;
+  --color5: #a2ad59;
+  --radius: 1rem;
+  /* Gradient über alle Farben */
+  --gradient: linear-gradient(135deg, var(--color1) 0%, var(--color2) 25%, var(--color3) 50%, var(--color4) 75%, var(--color5) 100%);
+  --text-light: #fff;
+  --text-dark: #1a1a1a;
+}
+
 #app {
   position: relative;
+  min-height: 100vh;
+  background: var(--gradient);
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-light);
   overflow: hidden;
-  color: #1a1a1a;
-
+  display: flex;
+  flex-direction: column;
 }
 
-/* Dunkelgraues Overlay über die ganze Seite */
 .page-overlay {
-  content: '';
   position: fixed;
-  inset: 0;              /* top/right/bottom/left = 0 */
-  background: rgba(0, 0, 0, 0.6);
-  pointer-events: none;  /* Klicks gehen durch */
-  z-index: 0;
-  color: #1a1a1a;
-
-}
-
-/* Alle Contents (Header, main) über Overlay legen */
-header,
-.page-content {
-  position: relative;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
   z-index: 1;
-  color: #1a1a1a;
-
 }
 
-/* Optional: etwas Transparenz im Content-Hintergrund */
-.page-content {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(8px);
-  min-height: 100vh;
-  padding: 2rem 1rem;
-  box-sizing: border-box;
-  color: #1a1a1a;
-
-}
-#app {
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-
-}
-
-header {
-  background: var(--color-primary-light);
-  color: #fff;
+.app-header {
+  position: relative;
+  z-index: 2;
   padding: 1rem;
   text-align: center;
   font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-dark);
+  backdrop-filter: blur(8px);
 }
 
-main {
+.page-content {
+  position: inherit;
+  z-index: 2;
+  flex: 1;
+  backdrop-filter: blur(3px);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
 
-  padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+@media (max-width: 600px) {
+  .app-header {
+    font-size: 1.25rem;
+    padding: 0.75rem;
+  }
+  .page-content {
+  }
 }
 </style>
