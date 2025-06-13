@@ -66,8 +66,7 @@
               <div class="player-picture">
                 <img
                     :src="player.profileImage || defaultProfileImage"
-                    :alt="player.firstName || 'Spieler'"
-                />
+                    alt=""/>
               </div>
             </div>
             <!-- Card Bottom -->
@@ -170,12 +169,13 @@ const fullName = (p: Player): string => {
   const vor = (p.firstName || '').trim()
   const nach = (p.lastName || '').trim()
   if (!vor && !nach) return ''
-  if (vor.length > 9 && nach) {
-    const initial = vor.charAt(0).toUpperCase()
+  const initial = vor ? vor.charAt(0).toUpperCase() : ''
+  if (nach) {
+    // Initial + Nachname
     return `${initial}. ${nach}`.toUpperCase()
   }
-  const zusamm = [vor, nach].filter(s => s).join(' ')
-  return zusamm.toUpperCase()
+  // Nur Initial, falls kein Nachname
+  return initial
 }
 
 // Funktion: Erzeuge Flag-Emoji
@@ -418,7 +418,7 @@ onMounted(fetchPlayers)
   justify-content: space-between;
   background-image: url("https://www.fifarosters.com/assets/cards/fifa24/templates/hd-special.png");
   background-size: cover;
-  padding: 2rem 0;
+  padding: 4rem 0;
   color: inherit;
   overflow: hidden;
   transition: transform 0.2s;
