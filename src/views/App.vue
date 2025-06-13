@@ -3,8 +3,9 @@
   <div id="app">
     <div class="page-overlay"></div>
     <header class="app-header">
+      <img src="/src/assets/icon.webp" alt="Yalla Shoot Tool Logo" class="app-logo" />
+
       <h1>SOCCER N & Y</h1>
-      <h5> Players list</h5>
     </header>
     <main class="page-content">
       <router-view />
@@ -30,6 +31,11 @@
   --text-light: #fff;
   --text-dark: #1a1a1a;
 }
+.app-logo {
+  max-height: 100px; /* z.B. 40px hoch */
+  width: auto;
+}
+.app-header img + span { margin-left: 0.5rem; font-size: 1.25rem; color: var(--text-dark); }
 
 #app {
   position: relative;

@@ -1,12 +1,14 @@
+<!-- PlayerDetailPage.vue -->
 <template>
   <div class="detail-page">
-    <button class="back" @click="goBack">← back</button>
+    <button class="back" @click="goBack">← zurück</button>
+
     <div class="card">
-      <h2>Player Page</h2>
+      <h2>Spieler bearbeiten</h2>
 
       <!-- PIN-Login -->
       <div v-if="!authenticated" class="pin-login">
-        <label for="pin-input">Enter your pin:</label>
+        <label for="pin-input">PIN eingeben:</label>
         <input
             id="pin-input"
             type="password"
@@ -18,11 +20,11 @@
         <p v-if="pinError" class="error">{{ pinError }}</p>
       </div>
 
-      <!-- Bild Upload & Vorschau -->
+      <!-- Formular-Bereich nach erfolgreicher PIN-Authentifizierung -->
       <div v-else>
-        <!-- Profilbild -->
+        <!-- Profilbild Upload & Vorschau -->
         <div class="form-group">
-          <label for="profileImage">Profile Image</label>
+          <label for="profileImage">Profilbild</label>
           <input
               id="profileImage"
               type="file"
@@ -37,8 +39,8 @@
         <!-- Nation -->
         <div class="form-group">
           <label for="nation">Nation</label>
-          <select id="nation" v-model="player.nation" required>
-            <option disabled value="">Choose Flag</option>
+          <select id="nation" v-model="player.nation">
+            <option disabled value="">-- Flagge wählen --</option>
             <option
                 v-for="f in flags"
                 :key="f.id"
@@ -49,19 +51,34 @@
           </select>
         </div>
 
-        <!-- Formular -->
+        <!-- Formular mit bestehenden Werten oder leeren Feldern -->
         <form @submit.prevent="updatePlayer">
           <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input id="firstName" v-model="player.firstName" required />
+            <label for="firstName">Vorname</label>
+            <input
+                id="firstName"
+                v-model="player.firstName"
+                placeholder="Vorname"
+                required
+            />
           </div>
           <div class="form-group">
-            <label for="lastName">Surename</label>
-            <input id="lastName" v-model="player.lastName" required />
+            <label for="lastName">Nachname</label>
+            <input
+                id="lastName"
+                v-model="player.lastName"
+                placeholder="Nachname"
+                required
+            />
           </div>
           <div class="form-group">
-            <label for="birthdate">Birthday</label>
-            <input id="birthdate" type="date" v-model="player.birthdate" required />
+            <label for="birthdate">Geburtstag</label>
+            <input
+                id="birthdate"
+                type="date"
+                v-model="player.birthdate"
+                required
+            />
           </div>
           <div class="form-group">
             <label for="position">Position</label>
@@ -78,41 +95,97 @@
           </div>
           <div class="form-group">
             <label for="pin">PIN</label>
-            <input id="pin" type="number" v-model="player.pin" required />
+            <input
+                id="pin"
+                type="number"
+                v-model="player.pin"
+                placeholder="z.B. 1234"
+                required
+            />
           </div>
+
+          <!-- PAC, SHO, PAS, DRI (Keys in Großbuchstaben) -->
+          <div class="form-group">
+            <label for="PAC">PAC (Pace)</label>
+            <input
+                id="PAC"
+                type="number"
+                v-model.number="player.PAC"
+                min="1"
+                max="99"
+                :placeholder="player.PAC !== undefined && player.PAC !== null ? '' : 'z.B. 50'"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="SHO">SHO (Shooting)</label>
+            <input
+                id="SHO"
+                type="number"
+                v-model.number="player.SHO"
+                min="1"
+                max="99"
+                :placeholder="player.SHO !== undefined && player.SHO !== null ? '' : 'z.B. 50'"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="PAS">PAS (Passing)</label>
+            <input
+                id="PAS"
+                type="number"
+                v-model.number="player.PAS"
+                min="1"
+                max="99"
+                :placeholder="player.PAS !== undefined && player.PAS !== null ? '' : 'z.B. 50'"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="DRI">DRI (Dribbling)</label>
+            <input
+                id="DRI"
+                type="number"
+                v-model.number="player.DRI"
+                min="1"
+                max="99"
+                :placeholder="player.DRI !== undefined && player.DRI !== null ? '' : 'z.B. 50'"
+            />
+          </div>
+
 
           <div class="button-group">
             <button type="submit" class="btn save" :disabled="loading">
-              {{ loading ? 'Saving…' : 'Save' }}
+              {{ loading ? 'Speichern…' : 'Speichern' }}
             </button>
-            <button type="button" class="btn delete" @click="deletePlayer">
-              Delete
+            <button type="button" class="btn delete" @click="deletePlayer" :disabled="loading">
+              Löschen
             </button>
           </div>
         </form>
 
-        <!-- News & PIN Bereich -->
+        <!-- News & Rounds Bereich -->
         <div class="news-box">
-          <h3>Your Pins & Rounds:</h3>
+          <h3>Deine Pins & Runden:</h3>
           <ul>
             <li v-for="runde in rounds" :key="runde.id">
-              <strong>{{ runde.date }} at {{ runde.time }}</strong>
+              <strong>{{ runde.date }} um {{ runde.time }}</strong>
               <div v-if="getPlayerPin(runde) !== '—'">
                 PIN: <span class="pin">{{ getPlayerPin(runde) }}</span>
                 <button @click="copyRoundPin(getPlayerPin(runde))" class="copy-btn">
-                  Copy
+                  Kopieren
                 </button>
               </div>
               <div v-else>
-                No PIN assigned for this round.
+                Kein PIN für diese Runde.
               </div>
             </li>
           </ul>
           <router-link to="/rate" class="btn-rate">
-            To Review Page
+            Zur Bewertungsseite
           </router-link>
           <router-link to="/" class="btn-rate">
-            To Main Page
+            Zur Hauptseite
           </router-link>
         </div>
       </div>
@@ -154,6 +227,7 @@ const pinError = ref('')
 async function fetchPlayer() {
   const snap = await getDoc(doc(db, 'players', id))
   if (snap.exists()) {
+    // Setze player.value auf existierende Daten
     player.value = { id: snap.id, ...snap.data() }
   } else {
     router.push('/')
@@ -164,28 +238,35 @@ async function fetchPositions() {
   const snap = await getDocs(collection(db, 'positions'))
   positions.value = snap.docs.map(d => ({
     id: d.id,
-    shortcut: d.data().shortcut
+    shortcut: (d.data() as any).shortcut
   }))
 }
 
 async function fetchRounds() {
   const snap = await getDocs(collection(db, 'rounds'))
-  rounds.value = snap.docs.map(d => ({
-    id: d.id,
-    date: d.data().date,
-    time: d.data().time,
-    pins: d.data().pins || [],
-    playerIds: d.data().playerIds || []
-  }))
+  rounds.value = snap.docs.map(d => {
+    const data = d.data() as any
+    return {
+      id: d.id,
+      date: data.date,
+      time: data.time,
+      pins: data.pins || [],
+      playerIds: data.playerIds || []
+    }
+  })
 }
 
 async function fetchFlags() {
   const snap = await getDocs(collection(db, 'flags'))
-  flags.value = snap.docs.map(doc => ({
-    id: doc.id,
-    flag: doc.data().flag,
-    name: doc.data().name
-  }))
+  flags.value = snap.docs.map(doc => {
+    const data = doc.data() as any
+    // Erwartet z.B. data.flag enthält bereits Emoji oder ISO-Code
+    return {
+      id: doc.id,
+      flag: data.flag,
+      name: data.name
+    }
+  })
 }
 
 onMounted(async () => {
@@ -201,7 +282,7 @@ function checkPin() {
     authenticated.value = true
     pinError.value = ''
   } else {
-    pinError.value = 'Incorrect PIN!'
+    pinError.value = 'Falsche PIN!'
   }
 }
 
@@ -218,7 +299,10 @@ async function handleImageUpload(e: Event) {
         { method: 'POST', body: form }
     )
     const json = await res.json()
+    // Speichere URL
     player.value.profileImage = json.data.url
+  } catch (err) {
+    console.error('Upload-Fehler', err)
   } finally {
     loading.value = false
   }
@@ -227,15 +311,31 @@ async function handleImageUpload(e: Event) {
 // Update & Delete
 async function updatePlayer() {
   loading.value = true
-  await updateDoc(doc(db, 'players', id), { ...player.value })
-  loading.value = false
-  alert('Changes saved!')
+  try {
+    // Schreibe alle Felder in Firestore: falls neuer Wert existiert, wird überschrieben;
+    // falls Feld vorher nicht existierte und leer gelassen wird, bleibt es ggf. undefined/leer
+    const upd: any = { ...player.value }
+    // Entferne id-Feld, falls in Firestore nicht als Feld gespeichert:
+    delete upd.id
+    await updateDoc(doc(db, 'players', id), upd)
+    alert('Änderungen gespeichert!')
+  } catch (err) {
+    console.error('Fehler beim Speichern', err)
+    alert('Fehler beim Speichern')
+  } finally {
+    loading.value = false
+  }
 }
 
 async function deletePlayer() {
-  if (!confirm('Really delete?')) return
-  await deleteDoc(doc(db, 'players', id))
-  router.push('/')
+  if (!confirm('Wirklich löschen?')) return
+  try {
+    await deleteDoc(doc(db, 'players', id))
+    router.push('/')
+  } catch (err) {
+    console.error('Fehler beim Löschen', err)
+    alert('Fehler beim Löschen')
+  }
 }
 
 function goBack() {
@@ -250,10 +350,9 @@ function getPlayerPin(runde: any) {
 
 function copyRoundPin(pin: string) {
   navigator.clipboard.writeText(pin)
-  alert('PIN copied!')
+  alert('PIN kopiert!')
 }
 </script>
-
 
 <style scoped>
 .detail-page {
@@ -421,5 +520,10 @@ function copyRoundPin(pin: string) {
 
 .btn-rate:hover {
   background: #5a4ac2;
+}
+
+.error {
+  color: red;
+  margin-top: 0.5rem;
 }
 </style>

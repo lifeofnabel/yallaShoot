@@ -2,6 +2,7 @@
 <template>
   <div class="player-list-page">
     <div class="background-overlay"></div>
+    <!-- Controls: Laden, Filter, Sort -->
     <section class="controls">
       <div class="button-row">
         <button class="btn btn-primary" @click="fetchPlayers" :disabled="loading">
@@ -36,32 +37,70 @@
       </div>
     </section>
 
+    <!-- Spieler-Karten -->
     <section class="players-section">
       <div v-if="filteredAndSortedPlayers.length" class="players-grid">
-        <div v-for="player in filteredAndSortedPlayers" :key="player.id" class="card-wrapper">
+        <div
+            v-for="player in filteredAndSortedPlayers"
+            :key="player.id"
+            class="card-wrapper"
+        >
           <router-link :to="`/player/${player.id}`" class="fut-player-card">
-            <!-- Card Top: rating, position, nation, image -->
+            <!-- Card Top -->
             <div class="player-card-top">
               <div class="player-master-info">
-                <span class="player-rating">{{ player.avgRating !== null ? Math.round(player.avgRating) : 50 }}</span>
-                <span class="player-position">{{ player.position || '—' }}</span>
-                <span class="player-nation-emoji">{{ nationEmoji(player.nation) }}</span>
+                <!-- Rating -->
+                <span class="player-rating">
+                  {{ player.avgRating !== null ? Math.round(player.avgRating) : 5 }}
+                </span>
+                <!-- Position -->
+                <span class="player-position">
+                  {{ player.position || '—' }}
+                </span>
+                <!-- Flagge -->
+                <span class="player-nation-emoji">
+                  {{ nationEmoji(player.nation) }}
+                </span>
               </div>
-              <!-- Picture below master info, shifted down -->
+              <!-- Bild -->
               <div class="player-picture">
-                <img :src="player.profileImage || defaultProfileImage" :alt="player.firstName || 'Spieler'" />
+                <img
+                    :src="player.profileImage || defaultProfileImage"
+                    :alt="player.firstName || 'Spieler'"
+                />
               </div>
             </div>
-
-            <!-- Card Bottom: name and features side by side -->
+            <!-- Card Bottom -->
             <div class="player-card-bottom">
               <div class="player-info">
+                <!-- Name -->
                 <div class="player-name">{{ fullName(player) }}</div>
+                <!-- Features DRI, PAC, PAS, SHO nebeneinander -->
                 <div class="player-features">
-                  <div class="feature-item"><span class="player-feature-value">{{ player.dri ?? 5 }}</span><span class="player-feature-title">DRI</span></div>
-                  <div class="feature-item"><span class="player-feature-value">{{ player.pac ?? 5 }}</span><span class="player-feature-title">PAC</span></div>
-                  <div class="feature-item"><span class="player-feature-value">{{ player.pas ?? 5 }}</span><span class="player-feature-title">PAS</span></div>
-                  <div class="feature-item"><span class="player-feature-value">{{ player.sho ?? 5 }}</span><span class="player-feature-title">SHO</span></div>
+                  <div class="feature-item">
+                    <span class="player-feature-value">
+                      {{ player.DRI ?? 5 }}
+                    </span>
+                    <span class="player-feature-title">DRI</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="player-feature-value">
+                      {{ player.PAC ?? 5 }}
+                    </span>
+                    <span class="player-feature-title">PAC</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="player-feature-value">
+                      {{ player.PAS ?? 5 }}
+                    </span>
+                    <span class="player-feature-title">PAS</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="player-feature-value">
+                      {{ player.SHO ?? 5 }}
+                    </span>
+                    <span class="player-feature-title">SHO</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -89,10 +128,10 @@ interface Player {
   nation?: string
   profileImage?: string
   avgRating: number | null
-  pac?: number
-  sho?: number
-  pas?: number
-  dri?: number
+  PAC?: number
+  SHO?: number
+  PAS?: number
+  DRI?: number
   def?: number
   phy?: number
   skillMoves?: string
@@ -115,88 +154,68 @@ const defaultProfileImage = 'https://via.placeholder.com/150'
 const nationMap: Record<string, string> = {
   UK: 'GB',
   EN: 'GB',
-  // weitere Einträge nach Bedarf, z.B. 'XK': 'RS' o.Ä.
+  // ggf. weitere Sonderfälle
 }
-
-// Optional: Wenn in der DB volle Ländernamen stehen, hier Mapping ergänzen.
-// Schlüssel in Großbuchstaben, Wert ISO-Alpha-2:
+// Optional: Mapping, falls in DB volle Ländernamen stehen
 const countryNameToCode: Record<string, string> = {
   GERMANY: 'DE',
   BULGARIA: 'BG',
   FRANCE: 'FR',
   SPAIN: 'ES',
-  // ... weitere Länder ergänzen, falls nötig
+  // ... nach Bedarf ergänzen
 }
 
-// Funktion: Formatiere den vollständigen Namen, kürze bei langen Vornamen (>9 Zeichen)
+// Funktion: Formatiere Namen, kürze Vorname >9 Zeichen
 const fullName = (p: Player): string => {
   const vor = (p.firstName || '').trim()
   const nach = (p.lastName || '').trim()
   if (!vor && !nach) return ''
-  // Wenn Vorname länger als 9 Zeichen, Kürzel: "V. Nachname"
   if (vor.length > 9 && nach) {
     const initial = vor.charAt(0).toUpperCase()
     return `${initial}. ${nach}`.toUpperCase()
   }
-  // Sonst "Vorname Nachname" (wenn Nachname leer, nur Vorname), in Großbuchstaben
   const zusamm = [vor, nach].filter(s => s).join(' ')
   return zusamm.toUpperCase()
 }
 
-// Funktion: Erzeuge Flag-Emoji aus DB-Wert. Behandelt:
-// - bereits vorhandene Flag-Emoji (Regional Indicator Symbols) => gibt es zurück
-// - ISO-Alpha-2-Codes => Emoji
-// - volle Ländernamen über countryNameToCode => ISO-Code => Emoji
-// - Sonderfälle via nationMap
-// - Ungültiges oder andere Werte => Fallback 🏳️
+// Funktion: Erzeuge Flag-Emoji
 const nationEmoji = (nation?: string): string => {
-  if (!nation) {
-    return '🏳️'
-  }
+  if (!nation) return '🏳️'
   const trimmed = nation.trim()
-  if (!trimmed) {
-    return '🏳️'
-  }
-  // Prüfen, ob bereits Flag-Emoji: Regional Indicator Symbols liegen im Unicode-Bereich U+1F1E6–U+1F1FF.
-  // Array.from, um korrekte Codepoint-Erkennung zu haben
+  if (!trimmed) return '🏳️'
+  // Prüfen, ob bereits Regional Indicator Symbol vorhanden
   const firstCp = Array.from(trimmed)[0]?.codePointAt(0)
   if (firstCp !== undefined) {
     if (firstCp >= 0x1F1E6 && firstCp <= 0x1F1FF) {
-      // trimmed enthält bereits Flag-Emoji (z.B. "🇩🇪")
+      // Bereits Flag-Emoji
       return trimmed
     }
-    // Optional: wenn DB ein generisches Emoji wie "🌐" speichert, falls gewünscht
+    // Optional: generisches Emoji, falls DB so speichert
     if (firstCp === 0x1F310) {
       return '🌐'
     }
   }
-  // Ansonsten behandeln wir trimmed als möglichen ISO-Alpha-2-Code oder als Ländernamen
+  // ISO-Code oder Ländername?
   let codeRaw = trimmed.toUpperCase()
-
-  // Falls voller Ländername in DB:
   if (countryNameToCode[codeRaw]) {
     codeRaw = countryNameToCode[codeRaw]
   }
-  // Sonderfall-Mapping
   if (nationMap[codeRaw]) {
     codeRaw = nationMap[codeRaw]
   }
-  // Nun sollte codeRaw exakt 2 Buchstaben sein
   if (codeRaw.length !== 2) {
     return '🏳️'
   }
   const c0 = codeRaw.charCodeAt(0)
   const c1 = codeRaw.charCodeAt(1)
-  // A–Z prüfen
   if (c0 < 65 || c0 > 90 || c1 < 65 || c1 > 90) {
     return '🏳️'
   }
-  // Regional Indicator Symbols erzeugen
   const BASE = 0x1F1E6
   return String.fromCodePoint(BASE + (c0 - 65), BASE + (c1 - 65))
 }
 
-// Fetch Positionen aus Firestore
+// Fetch Positionen
 const fetchPositions = async () => {
   try {
     const snap = await getDocs(collection(db, 'positions'))
@@ -212,31 +231,31 @@ const fetchPositions = async () => {
   }
 }
 
-// Fetch Spieler und berechne avgRating
+// Fetch Spieler + avgRating
 const fetchPlayers = async () => {
   loading.value = true
   try {
-    // Positionen einmal laden, falls noch leer
+    // Positionen einmal laden
     if (!positions.value.length) {
       await fetchPositions()
     }
-    // Spieler-Dokumente
+    // Spieler laden
     const snap = await getDocs(collection(db, 'players'))
     const loaded: Player[] = []
-    for (const doc of snap.docs) {
-      const data = doc.data() as any
+    for (const docSnap of snap.docs) {
+      const data = docSnap.data() as any
       loaded.push({
-        id: doc.id,
+        id: docSnap.id,
         firstName: data.firstName || '',
         lastName: data.lastName || '',
         position: data.position || '',
         nation: data.nation || '',
         profileImage: data.profileImage || defaultProfileImage,
         avgRating: null,
-        pac: data.pac,
-        sho: data.sho,
-        pas: data.pas,
-        dri: data.dri,
+        PAC: data.PAC,
+        SHO: data.SHO,
+        PAS: data.PAS,
+        DRI: data.DRI,
         def: data.def,
         phy: data.phy,
         skillMoves: data.skillMoves,
@@ -249,9 +268,7 @@ const fetchPlayers = async () => {
     // Durchschnitt berechnen
     for (const p of loaded) {
       const arr = ratings.filter(r => r.toPlayerId === p.id && typeof r.rating === 'number')
-      p.avgRating = arr.length
-          ? arr.reduce((sum, r) => sum + r.rating, 0) / arr.length
-          : null
+      p.avgRating = arr.length ? arr.reduce((sum, r) => sum + r.rating, 0) / arr.length : null
     }
     players.value = loaded
   } catch (err: any) {
@@ -261,7 +278,7 @@ const fetchPlayers = async () => {
   }
 }
 
-// Computed: Filter & Sortierung
+// Computed Filter & Sort
 const filteredAndSortedPlayers = computed(() => {
   let list = players.value
   if (selectedPosition.value) {
@@ -291,17 +308,18 @@ const filteredAndSortedPlayers = computed(() => {
   return sorted
 })
 
-// On Mounted: Spieler laden
 onMounted(fetchPlayers)
 </script>
 
 <style scoped>
+/* Hintergrund-Overlay */
 .background-overlay {
   position: fixed;
   inset: 0;
   background: rgba(8, 96, 95, 0.5);
   z-index: -1;
 }
+/* Container */
 .player-list-page {
   position: relative;
   width: 100%;
@@ -310,7 +328,9 @@ onMounted(fetchPlayers)
   padding: 0.5rem;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(6px);
+  border-radius: 1rem;
 }
+/* Controls */
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -368,38 +388,48 @@ onMounted(fetchPlayers)
   padding: 0.4rem;
   font-size: 0.9rem;
 }
+/* Grid: responsive, mindestens 2 Karten nebeneinander auf Mobil */
 .players-grid {
   display: grid;
   gap: 0.75rem;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 }
 @media (min-width: 500px) {
-  .players-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .players-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
 }
 @media (min-width: 800px) {
-  .players-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .players-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 }
 .card-wrapper {
   display: flex;
   justify-content: center;
 }
+/* Card */
 .fut-player-card {
   position: relative;
   width: 100%;
   max-width: 300px;
-  background-image: url("https://www.fifarosters.com/assets/cards/fifa24/templates/hd-special.png");
-  background-size: cover;
-  padding: 2.2rem 0;
-  color: inherit;
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
+  background-image: url("https://www.fifarosters.com/assets/cards/fifa24/templates/hd-special.png");
+  background-size: cover;
+  padding: 2rem 0;
+  color: inherit;
   overflow: hidden;
   transition: transform 0.2s;
   text-decoration: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .fut-player-card:hover {
   transform: translateY(-4px);
 }
+/* Card Top */
 .player-card-top {
   display: flex;
   flex-direction: column;
@@ -417,21 +447,35 @@ onMounted(fetchPlayers)
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
 }
-.player-rating { font-size: 1.6rem; }
-.player-position { font-size: 5.5rem; }
-.player-nation-emoji { font-size: 1.2rem; }
+.player-rating {
+  font-size: 1.6rem;
+}
+.player-position {
+  font-size: 2rem;
+}
+@media(min-width:600px) {
+  .player-position {
+    font-size: 3rem;
+  }
+}
+.player-nation-emoji {
+  font-size: 1.2rem;
+}
+/* Bild */
 .player-picture {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   margin: 0.5rem auto;
   overflow: hidden;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
 }
 .player-picture img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
-
+/* Card Bottom */
 .player-card-bottom {
   background: rgba(0,0,0,0.2);
   padding: 0.4rem 0.8rem;
@@ -443,7 +487,7 @@ onMounted(fetchPlayers)
   color: #fff;
 }
 .player-name {
-  font-size: 1.2rem;
+  font-size: 1rem;
   text-transform: uppercase;
   margin-bottom: 0.4rem;
   word-break: break-word;
@@ -459,13 +503,26 @@ onMounted(fetchPlayers)
   align-items: center;
 }
 .player-feature-value {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 .player-feature-title {
   font-size: 0.65rem;
   opacity: 0.8;
 }
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 0.5rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Empty */
 .empty {
   text-align: center;
   padding: 1.5rem;
