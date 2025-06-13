@@ -470,6 +470,7 @@ function copyRoundPin(pin: string) {
   padding: 1rem;
   border-radius: 0.75rem;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  color: #1a1a1a;
 }
 
 .news-box h3 {
